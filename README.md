@@ -1,21 +1,216 @@
-# GemFlow — Jewelry E-Commerce Platform
+# GemFlow — Full-Stack Jewelry E-Commerce Platform
 
-A small, independent, **fictional jewelry catalog** that demonstrates all nine technologies the recruiter named: **C#, .NET, SQL Server, TypeScript, JavaScript, React, AWS, GraphQL, Bootstrap**.
+GemFlow is an independent, fictional jewelry e-commerce application built to demonstrate end-to-end product development, from a responsive shopping experience to backend APIs, inventory management, and staff administration.
 
-> This project is *inspired by a common jewelry/e-commerce workflow*. It is not affiliated with Stuller, does not use proprietary data, and does not collect payments.
+It uses **React, TypeScript, JavaScript, Bootstrap, C#, ASP.NET Core (.NET 10), GraphQL, Entity Framework Core, and SQL Server**.
 
-## What's inside (first milestone)
+> **Project Scope:** GemFlow is a portfolio/demo application, not affiliated with Stuller or any other jewelry retailer. It uses demonstration product data and does **not** process real payments.
 
-- `frontend/`: React + TypeScript + Bootstrap responsive catalog, search, category filters, in-stock toggle, cart, and demo checkout. UI uses clearly labeled **preview data if the API is offline**.
-- `backend/`: C# / ASP.NET Core (.NET 10) API with Hot Chocolate GraphQL, EF Core and SQL Server; a small CMS-like homepage content record; order mutation with inventory updates.
-- `backend/Program.cs`: GraphQL endpoint `/graphql`, health `/health`, and customer website partner catalog feed `/api/partner/catalog` (REST).
-- `docker-compose.yml`: SQL Server 2022 and .NET API.
-- `scripts/verify-api.mjs`: vanilla JavaScript API smoke test.
-- `infra/AWS-DEPLOYMENT.md`: planned AWS setup (not yet deployed).
+## Features
 
-## First run — frontend preview (no backend required)
+### Customer Storefront
 
-Prerequisite: **Node.js 20.19+ or 22.12+** with npm.
+- Responsive jewelry catalog with product images and fallback illustrations
+- Product search and category filtering
+- In-stock product filtering
+- Shopping cart and demo checkout
+- Inventory-aware ordering with backend stock validation
+- Product prices calculated from SQL Server
+- Preview products when the API is offline
+
+### Product and Inventory Management
+
+- Admin login and protected dashboard
+- Create new jewelry products using GraphQL
+- Edit product names, descriptions, categories, and prices
+- Update inventory quantities
+- View and filter product inventory
+- Persist changes in SQL Server
+- Automatically reflect product updates in the storefront
+
+### Order Management
+
+- View customer orders and purchased products
+- View order quantities, prices, and totals
+- Search and filter orders
+- Manage order fulfillment statuses:
+  - Placed
+  - Processing
+  - Shipped
+  - Delivered
+- Cancel eligible orders
+- Restore reserved inventory for cancelled orders
+- Restrict administrative operations to authenticated users
+
+### Authentication and Security
+
+- Administrator login and logout
+- Protected admin routes
+- HTTP-only authentication cookies
+- Server-side credential validation
+- GraphQL authorization for administrative operations
+- Environment-based credential configuration
+- Authentication and authorization testing
+
+### APIs and Integrations
+
+- GraphQL product queries and mutations
+- GraphQL order management
+- REST-based partner catalog feed
+- ASP.NET Core API endpoints
+- Entity Framework Core integration
+- SQL Server database persistence
+- Input validation and error handling
+
+## Technology Stack
+
+| Layer                         | Technologies                                       |
+| ----------------------------- | -------------------------------------------------- |
+| Frontend                      | React, TypeScript, JavaScript, Bootstrap, Vite     |
+| Backend                       | C#, ASP.NET Core (.NET 10), GraphQL, Hot Chocolate |
+| Database                      | Microsoft SQL Server, Entity Framework Core        |
+| APIs                          | GraphQL, REST                                      |
+| Authentication                | ASP.NET Core, HTTP-only session cookies            |
+| Containerization              | Docker, Docker Compose                             |
+| Testing                       | JavaScript, Node.js Test Runner                    |
+| Version Control               | Git, GitHub                                        |
+| Frontend Deployment (Planned) | Vercel                                             |
+| Backend Deployment (Planned)  | Railway                                            |
+| Database Hosting (Planned)    | Hosted SQL Server                                  |
+
+## Project Architecture
+
+```text
+                GemFlow E-Commerce
+                        |
+                        v
+          React + TypeScript + Bootstrap
+                        |
+              GraphQL / REST API
+                        |
+                        v
+               ASP.NET Core (.NET)
+                        |
+           +------------+------------+
+           |                         |
+           v                         v
+    GraphQL Queries            GraphQL Mutations
+           |                         |
+           +------------+------------+
+                        |
+                        v
+               Entity Framework Core
+                        |
+                        v
+                   SQL Server
+                        |
+          +-------------+-------------+
+          |             |             |
+       Products       Orders       Inventory
+```
+
+## Repository Structure
+
+```text
+GemFlow/
+├── frontend/
+│   ├── src/
+│   │   ├── App.tsx
+│   │   ├── AdminDashboard.tsx
+│   │   ├── AdminGate.tsx
+│   │   ├── OrderManagement.tsx
+│   │   ├── main.tsx
+│   │   └── styles.css
+│   ├── package.json
+│   ├── vite.config.ts
+│   └── index.html
+│
+├── backend/
+│   ├── Data/
+│   │   ├── ShopDbContext.cs
+│   │   └── SeedData.cs
+│   ├── GraphQL/
+│   │   ├── Query.cs
+│   │   └── Mutation.cs
+│   ├── Models/
+│   │   └── Entities.cs
+│   ├── Security/
+│   │   └── AdminSecurity.cs
+│   ├── Program.cs
+│   ├── appsettings.json
+│   ├── GemFlow.Api.csproj
+│   └── Dockerfile
+│
+├── scripts/
+│   ├── verify-api.mjs
+│   ├── verify-orders.mjs
+│   └── test-gemflow.mjs
+│
+├── docker-compose.yml
+├── .env.example
+├── .gitignore
+└── README.md
+```
+
+## Getting Started
+
+### Prerequisites
+
+Make sure the following tools are installed:
+
+- Node.js 20.19+ or a compatible newer version
+- npm
+- Docker Desktop
+- Git
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/charmydarji/GemFlow.git
+cd GemFlow
+```
+
+### 2. Configure Environment Variables
+
+Create a local `.env` file:
+
+```bash
+cp .env.example .env
+```
+
+Update the environment variables with your local SQL Server credentials and administrator credentials.
+
+**Important:**
+
+- Use a strong SQL Server password.
+- The administrator password must contain at least 16 characters.
+- Never commit `.env` files or credentials to GitHub.
+
+### 3. Start the Backend and Database
+
+From the project root:
+
+```bash
+docker compose up -d --build
+```
+
+Check the running containers:
+
+```bash
+docker compose ps
+```
+
+View API logs:
+
+```bash
+docker compose logs --tail=60 api
+```
+
+The backend uses ASP.NET Core, GraphQL, Entity Framework Core, and SQL Server.
+
+### 4. Start the Frontend
+
+Open another terminal:
 
 ```bash
 cd frontend
@@ -23,104 +218,198 @@ npm install
 npm run dev
 ```
 
-Open **http://localhost:5173**. You should see eight preview products and a banner saying the backend is offline. Filtering, search and cart work; placing an order requires the API.
+Open the application:
 
-## Full-stack local run
+**http://localhost:5173**
 
-Prerequisite: **Docker Desktop** (sufficient RAM; SQL Server requires ~2 GB or more) and Node.js.
+## Application URLs
 
-1. Open a terminal at this project's root and create your *local* environment file:
+| Application         | URL                                       |
+| ------------------- | ----------------------------------------- |
+| Customer Storefront | http://localhost:5173                     |
+| Admin Dashboard     | http://localhost:5173/admin               |
+| Order Management    | http://localhost:5173/admin/orders        |
+| GraphQL API         | http://localhost:5100/graphql             |
+| API Health Check    | http://localhost:5100/health              |
+| Partner Catalog API | http://localhost:5100/api/partner/catalog |
 
-   ```bash
-   cp .env.example .env
-   ```
+## GraphQL Examples
 
-2. Edit `.env` and choose a **unique strong SQL Server password** (do not use the placeholder for anything but local testing).
-3. Start the SQL Server and .NET API containers:
-
-   ```bash
-   docker compose up --build -d
-   docker compose logs -f api
-   ```
-
-   On first boot, SQL Server can take a minute to initialize. The API retries database initialization. To leave logs, press **Ctrl+C** (containers continue running).
-4. From a second terminal, run the frontend:
-
-   ```bash
-   cd frontend
-   npm install
-   npm run dev
-   ```
-
-5. Test these URLs:
-   - Storefront: **http://localhost:5173**
-   - GraphQL: **http://localhost:5100/graphql**
-   - Partner catalog JSON: **http://localhost:5100/api/partner/catalog**
-   - Health: **http://localhost:5100/health**
-6. From the root, verify GraphQL and partner APIs with **JavaScript**:
-
-   ```bash
-   node scripts/verify-api.mjs
-   ```
-
-### GraphQL sample
+### Fetch Products
 
 ```graphql
 query {
-  products(category: "Rings", inStockOnly: true) {
-    id sku name price stock
+  products {
+    id
+    sku
+    name
+    category
+    price
+    stock
   }
-  hero { heading body }
+  categories
 }
 ```
 
-Add one or more items in the storefront cart to try this mutation through the checkout UI:
+### Create a Product
+
+Requires administrator authentication.
 
 ```graphql
 mutation {
-  placeOrder(email: "test@example.com", items: [{ productId: 1, quantity: 1 }]) {
-    id total email createdAtUtc
+  createProduct(
+    sku: "RG-9002"
+    name: "Aurora Gold Ring"
+    category: "Rings"
+    description: "Minimal gold ring for everyday wear."
+    price: 229.99
+    stock: 8
+  ) {
+    id
+    sku
+    name
+    price
+    stock
   }
 }
 ```
 
-The backend computes prices from the database, updates stock, and writes order lines in a SQL transaction. This is a **learning/demo checkout, not a payment integration**.
+### Place a Demo Order
 
-### Apple Silicon Mac limitation (important)
-
-Microsoft SQL Server's 2022 Linux image targets **x86-64, not native Apple Silicon (ARM64)**. The Compose file requests `linux/amd64`, but Docker Desktop emulation/Rosetta on M-series MacBooks is **not an officially supported SQL Server setup** and may fail. If you hit SQL Server container errors, use a remote SQL Server instance (e.g. SQL Server on a supported x86 host or a cloud managed SQL Server instance) and run the .NET API locally with a `ConnectionStrings__Shop` environment variable. Avoid using a production database or exposing SQL Server publicly.
-
-## Architecture
-
-```text
-React + TypeScript + Bootstrap (5173)
-          │ POST /graphql
-          ▼
-C# ASP.NET Core / .NET 10 (5100)
- ├── GraphQL queries: products, product, categories, hero
- ├── GraphQL mutation: placeOrder (checks available stock)
- └── REST partner catalog feed: /api/partner/catalog
-          │ EF Core
-          ▼
-       SQL Server
-    Products | StoreContent | CustomerOrders | OrderLines
+```graphql
+mutation {
+  placeOrder(
+    email: "test@example.com"
+    items: [{ productId: 1, quantity: 1 }]
+  ) {
+    id
+    total
+    email
+    createdAtUtc
+  }
+}
 ```
 
-**AWS:** Planned deployment to S3 + CloudFront (frontend), ECS Fargate (.NET API), RDS SQL Server, Secrets Manager, and CloudWatch. See `infra/AWS-DEPLOYMENT.md`. This project does *not* claim to be deployed to AWS.
+The backend validates stock, calculates prices using database records, and saves the order.
 
-## Next milestones
+**Note:** This is a demonstration checkout. No real payments are processed.
 
-1. **Milestone 1 (this version):** end-to-end product catalog + inventory-aware demo checkout + partner feed.
-2. **Milestone 2:** customer-specific pricing and inventory caching/refresh; GraphQL paging.
-3. **Milestone 3:** CMS administration for the hero/banner and content publishing workflow.
-4. **Milestone 4:** tests, migrations, auth, monitoring and AWS deployment.
+## Automated Testing
 
-## Interview explanation (30 seconds)
+GemFlow includes JavaScript-based automated API and security tests.
 
-"I built a jewelry commerce demo that connects a React and TypeScript storefront to a C#/.NET backend. The GraphQL API serves products from SQL Server, and the app checks stock before creating an order. I also added a REST catalog feed that could support partner websites and a small CMS-style record for homepage content. I used Bootstrap for responsiveness and mapped out an AWS deployment with ECS, RDS and CloudFront."
+Run:
 
-## Security and scope
+```bash
+node --test scripts/test-gemflow.mjs
+```
 
-- Demo seed initialization uses EF Core `EnsureCreated`. For real releases, create EF Core migrations.
-- The partner feed and order action are **not authenticated**. Do not publish publicly without auth, authorization, rate limits, error handling and privacy safeguards.
-- No customer payments are processed or stored. Orders are fictional learning data only.
+### Test Coverage
+
+1. API health endpoint
+2. GraphQL product catalog and categories
+3. REST partner catalog consistency
+4. In-stock product filtering
+5. Invalid checkout rejection
+6. Administrator authentication
+7. Protection of customer order data
+8. Authorization for staff order mutations
+
+An optional authenticated-admin scenario is also available:
+
+```bash
+node scripts/test-gemflow.mjs --with-admin
+```
+
+## Apple Silicon Compatibility
+
+Microsoft SQL Server 2022's Linux container targets x86-64 architecture.
+
+On Apple Silicon Macs (M1, M2, M3, and M4), Docker Desktop may require emulation or Rosetta.
+
+This configuration is not officially supported by Microsoft and may experience compatibility issues.
+
+For a more reliable deployment, use SQL Server on a supported x86-64 environment.
+
+## Deployment
+
+### Current Status
+
+The full-stack application has been developed and tested locally using Docker.
+
+Public cloud deployment is planned but is not yet complete.
+
+### Frontend — Vercel
+
+The React frontend will be deployed using Vercel.
+
+Configuration:
+
+```text
+Framework: Vite
+Root Directory: frontend
+Build Command: npm run build
+Output Directory: dist
+```
+
+### Backend — Railway
+
+The ASP.NET Core API is planned for deployment using Railway or another Docker-compatible hosting platform.
+
+The backend includes:
+
+- C# and ASP.NET Core
+- GraphQL API
+- REST endpoints
+- Authentication and authorization
+- Entity Framework Core database integration
+
+### Database — Hosted SQL Server
+
+SQL Server will run separately using persistent storage on a supported hosting environment.
+
+Production database credentials will be managed through environment variables or the hosting provider's secret-management facilities.
+
+### Production Security Requirements
+
+Before publicly exposing the application:
+
+- Configure HTTPS
+- Secure authentication cookies
+- Implement CSRF protection
+- Configure API routing and CORS appropriately
+- Protect environment variables and secrets
+- Add appropriate rate limiting
+- Configure logging and monitoring
+- Use managed database migrations
+
+## Future Enhancements
+
+- Product pagination and advanced search
+- Customer-specific product pricing
+- Inventory synchronization and caching
+- Homepage CMS content management
+- Improved product image management
+- Expanded automated integration testing
+- Production monitoring and observability
+- CI/CD deployment pipelines
+- Database migration management
+- Enhanced authentication and authorization
+
+## Project Overview
+
+GemFlow demonstrates full-stack software engineering through a jewelry e-commerce application.
+
+The platform combines a responsive React and TypeScript storefront with a C#/.NET GraphQL backend and SQL Server database.
+
+Customers can browse jewelry products, filter categories, and place demo orders. Administrators can securely manage products, inventory, and order fulfillment.
+
+The project also includes REST API integrations, automated JavaScript testing, and a containerized local development environment.
+
+## Disclaimer
+
+GemFlow is an independent educational and portfolio project.
+
+It is not affiliated with, sponsored by, or endorsed by Stuller or any other jewelry retailer.
+
+Product information is fictional, images are illustrative, and the application does not process real payments.
