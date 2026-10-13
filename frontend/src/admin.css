@@ -1,0 +1,24 @@
+.gf-admin{min-height:100vh;background:#f8f5f0;color:#352d29;font-family:'DM Sans',sans-serif}
+.gf-admin-topbar{background:#fff;border-bottom:1px solid #e9dfd4}
+.gf-admin-logo{font-family:'Manrope',sans-serif;font-weight:800;letter-spacing:.09em;color:#382821;font-size:17px}
+.gf-admin-logo span{font-size:10px;font-weight:600;margin-left:12px;letter-spacing:.18em;color:#937b6e}
+.gf-admin-back{font-size:12px;color:#765747}
+.gf-admin-eyebrow{font-size:10px;font-weight:700;letter-spacing:.16em;color:#9c806c;margin-bottom:8px}
+.gf-admin-title{font-family:'Playfair Display',Georgia,serif;font-size:clamp(30px,4vw,43px);font-weight:500;margin-bottom:8px}
+.gf-admin-muted{color:#8b7970;font-size:13px}
+.gf-admin-stat,.gf-admin-panel{background:#fff;border:1px solid #e9dfd4;border-radius:10px;box-shadow:0 8px 30px rgba(80,50,31,.03)}
+.gf-admin-stat{padding:20px 21px;display:flex;flex-direction:column;gap:9px}
+.gf-admin-stat span{font-size:11px;color:#86776b}
+.gf-admin-stat strong{font-size:25px;font-weight:700;letter-spacing:-.05em;color:#3b302c}
+.gf-admin-panel h2{font-family:'Playfair Display',Georgia,serif;color:#3c2d27}
+.gf-admin .form-label{font-size:12px;font-weight:700;color:#635047}
+.gf-admin .form-control,.gf-admin .form-select{border:1px solid #e1d7ce;border-radius:5px;padding:10px 12px;background:#fff;color:#382c25;font-size:13px}
+.gf-admin .form-control:focus,.gf-admin .form-select:focus{border-color:#aa8065;box-shadow:0 0 0 3px rgba(170,128,101,.12)}
+.gf-admin-primary{border:0;color:#fff;background:#51392f;border-radius:4px;padding:12px 18px}
+.gf-admin-primary:hover,.gf-admin-primary:active{color:#fff;background:#765442}
+.gf-admin-table{font-size:12px}
+.gf-admin-table th{font-size:11px;color:#918074;font-weight:700;text-transform:uppercase;letter-spacing:.06em;border-bottom-color:#e8ddd4}
+.gf-admin-table td{padding:13px 8px;border-bottom-color:#f1eae3}
+.gf-admin-table td strong{display:block;font-weight:700}
+.gf-admin-table td small{display:block;font-size:10px;color:#938278;margin-top:4px}
+.gf-admin-security{font-size:11px;color:#a35442}

@@ -1,0 +1,30 @@
+.gf-orders-current { color: #382821; font-weight: 700; text-decoration: underline; text-underline-offset: 6px; }
+.gf-orders-subtext { font-size: 10px; color: #a08f85; }
+.gf-orders-email { overflow-wrap: anywhere; max-width: 200px; font-size: 12px; }
+.gf-orders-table tbody tr.gf-orders-selected { background-color: #f8f0e8; }
+.gf-orders-table td { vertical-align: middle; }
+.gf-order-badge { display: inline-flex; padding: 5px 8px; font-size: 10px; font-weight: 700; border-radius: 30px; white-space: nowrap; }
+.gf-order-placed { color: #725437; background: #f7e8d5; }
+.gf-order-processing { color: #355c8a; background: #e6f0fc; }
+.gf-order-shipped { color: #68498a; background: #eee5fa; }
+.gf-order-delivered { color: #27714b; background: #dff3e7; }
+.gf-order-cancelled { color: #a14949; background: #fae5e4; }
+.gf-orders-empty { text-align: center; padding: 28px 12px; }
+.gf-orders-empty strong { display: block; font-size: 17px; margin-bottom: 8px; }
+.gf-orders-empty p { font-size: 12px; color: #8d7b71; margin-bottom: 14px; }
+.gf-orders-info { display: flex; justify-content: space-between; gap: 14px; align-items: start; font-size: 12px; margin: 9px 0; }
+.gf-orders-info span { color: #927f74; }
+.gf-orders-info strong { text-align: right; font-weight: 600; }
+.gf-orders-divider { border-color: #eee1d7; margin: 20px 0; }
+.gf-orders-lines { list-style: none; margin: 0; padding: 0; }
+.gf-orders-lines li { display: flex; justify-content: space-between; gap: 16px; padding: 12px 0; border-bottom: 1px solid #f0e8e2; font-size: 12px; }
+.gf-orders-lines strong { display: block; font-size: 12px; line-height: 1.4; }
+.gf-orders-lines small { display: block; color: #948177; margin-top: 5px; font-size: 10px; }
+.gf-orders-lines b { white-space: nowrap; font-size: 12px; }
+.gf-orders-total { display: flex; justify-content: space-between; align-items: center; font-size: 13px; margin-top: 15px; }
+.gf-orders-total strong { font-size: 21px; }
+.gf-orders-progress { list-style: none; display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); padding: 0; margin: 16px 0 6px; gap: 5px; }
+.gf-orders-progress li { font-size: 9px; text-align: center; color: #9b8c83; border-top: 4px solid #e3dad3; padding: 8px 0; }
+.gf-orders-progress li.complete { border-top-color: #7c5a43; color: #53392b; font-weight: 700; }
+.gf-orders-cancel-note { font-size: 12px; padding: 12px; background: #fff0ee; color: #9a4d41; border-radius: 5px; }
+@media (max-width: 575px) { .gf-orders-table { min-width: 580px; } }

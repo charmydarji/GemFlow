@@ -1,0 +1,27 @@
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    # SQL Server's container is x86_64-only; emulation on Apple Silicon may not work.
+    platform: linux/amd64
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "${MSSQL_SA_PASSWORD:?Set MSSQL_SA_PASSWORD in .env}"
+    ports:
+      - "1433:1433"
+    volumes:
+      - gemflow_sql:/var/opt/mssql
+  api:
+    build: ./backend
+    environment:
+      ConnectionStrings__Shop: "Server=db,1433;Database=GemFlow;User Id=sa;Password=${MSSQL_SA_PASSWORD:?Set MSSQL_SA_PASSWORD in .env};TrustServerCertificate=True;Encrypt=True"
+      FrontendOrigin: "http://localhost:5173"
+      Admin__Username: "${ADMIN_USERNAME:?Set ADMIN_USERNAME in .env}"
+      Admin__Password: "${ADMIN_PASSWORD:?Set ADMIN_PASSWORD in .env}"
+      ASPNETCORE_ENVIRONMENT: "Development"
+    ports:
+      - "5100:8080"
+    depends_on:
+      - db
+    restart: on-failure
+volumes:
+  gemflow_sql:
