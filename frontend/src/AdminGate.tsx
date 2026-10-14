@@ -1,6 +1,8 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 
-const apiBase = import.meta.env.VITE_API_URL ?? 'http://localhost:5100';
+const apiBase = import.meta.env.PROD
+  ? window.location.origin
+  : (import.meta.env.VITE_API_URL ?? 'http://localhost:5100');
 type User = { username: string };
 
 export default function AdminGate({ children }: { children: ReactNode }) {
