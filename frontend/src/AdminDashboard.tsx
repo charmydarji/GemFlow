@@ -226,7 +226,7 @@ export default function AdminDashboard() {
             <h1 className="gf-admin-title">Product & inventory management</h1>
             <p className="gf-admin-muted">Manage jewelry products using React, GraphQL, C#/.NET and SQL Server.</p>
           </div>
-          <a className="btn btn-outline-secondary" href="http://localhost:5100/graphql/" target="_blank" rel="noreferrer">Explore GraphQL ↗</a>
+          <a className="btn btn-outline-secondary" href="https://gemflow-api-677007020371.us-east1.run.app/graphql" target="_blank" rel="noreferrer">Explore GraphQL ↗</a>
         </div>
 
         <div className="row g-3 mb-4">

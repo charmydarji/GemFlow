@@ -20,14 +20,17 @@ GemFlow is an independent, fictional jewelry e-commerce portfolio project demons
 
 The backend's base URL (`https://gemflow-api-677007020371.us-east1.run.app/`) is an **API service**, not a website; an HTTP 404 at `/` is normal if no root route is defined. Use `/health`, `/graphql`, or `/api/partner/catalog` to test it.
 
-## Current deployment status (October 2026)
+## Deployment notes (October 2026)
+
+The infrastructure details below describe the recorded demo setup; they have not been rechecked against the cloud consoles in this repository review.
 
 - **Frontend:** Deployed to **Vercel** at [`gemflow-cyan.vercel.app`](https://gemflow-cyan.vercel.app/).
 - **Backend:** Deployed to **Google Cloud Run** as `gemflow-api` in `us-east1` (South Carolina), using a Docker-based .NET 10 image built from the GitHub repository.
 - **Database:** **Google Cloud SQL for SQL Server 2022 Express**, instance `gemflow-sql`, database `GemFlowDb`, region `us-east1`.
 - **Database connectivity:** A **Cloud SQL Auth Proxy sidecar** (`cloud-sql-proxy`) connects the .NET container to Cloud SQL. The backend uses its local proxy listener on SQL Server port `1433`.
 - **Verified live:** `/health` returned `{ "status": "ok", "service": "GemFlow API" }`; the partner catalog returned jewelry product JSON; storefront products loaded after resolving frontend/Cloud Run CORS configuration.
-- **Still to verify end to end:** Admin-authorized product updates and order-management mutations from the Vercel domain, and a successful demo checkout that persists to the hosted database. An admin screen showing **“Signed in as admin”** by itself does **not** prove that the backend receives the authorization cookie for protected mutations.
+- **Source validation (October 14, 2026):** Frontend production build and all 9 local API checks passed, including authenticated product-mutation authorization and rejection of missing admin headers. The mutation check uses an invalid product ID and does not change inventory.
+- **Still to verify end to end after redeploying:** Admin-authorized product updates and order-management mutations from the Vercel domain, and a successful demo checkout that persists to the hosted database. An admin screen showing **“Signed in as admin”** by itself does **not** prove that the backend receives the authorization cookie for protected mutations.
 
 The application is a demonstration deployment, **not a hardened production commerce service**.
 
@@ -82,8 +85,8 @@ Browser
   │
   ▼
 Vercel — React / TypeScript / Vite
-  │  HTTPS GraphQL / REST requests
-  │  (CORS allows the deployed Vercel origin)
+  │  Same-origin HTTPS /graphql and /api/* requests
+  │  Vercel rewrites forward requests and cookies to Cloud Run
   ▼
 Google Cloud Run — ASP.NET Core .NET 10 (gemflow-api)
   │
@@ -117,8 +120,9 @@ GemFlow/
 │   │   ├── App.tsx
 │   │   ├── AdminDashboard.tsx
 │   │   ├── OrderManagement.tsx
-│   │   └── AdminGate.tsx
-│   └── vercel.json            # Vercel SPA routing (and API rewrites, if configured)
+│   │   ├── AdminGate.tsx
+│   │   └── api.ts             # Shared login and GraphQL endpoints
+│   └── vercel.json            # API proxy rewrites before the SPA fallback
 ├── backend/                   # ASP.NET Core API
 │   ├── Data/                  # EF Core DbContext and seed data
 │   ├── GraphQL/               # Queries and mutations
@@ -140,6 +144,7 @@ GemFlow/
 - **Node.js 20.19+** (or a compatible newer version) and npm
 - **Docker Desktop** (for a local SQL Server/API stack)
 - Git
+- **.NET 10 SDK** if building the backend outside Docker; Docker builds use the SDK image in `backend/Dockerfile`
 
 ### 1. Clone and configure
 
@@ -151,7 +156,9 @@ cp .env.example .env
 
 Edit `.env` and set your **local** SQL Server and administrator credentials. Use a unique admin password of **at least 16 characters**. Do not commit `.env`.
 
-### 2. Start SQL Server and the .NET API
+### 2. Optional: start SQL Server and the local .NET API
+
+The frontend uses the hosted Cloud Run API by default. For a local backend instead, start Docker and set `API_PROXY_TARGET=http://localhost:5100` in `frontend/.env.local`, then restart Vite.
 
 ```bash
 docker compose up -d --build
@@ -182,6 +189,8 @@ npm run dev
 | Health          | http://localhost:5100/health              |
 | Partner catalog | http://localhost:5100/api/partner/catalog |
 
+The development frontend runs at `http://localhost:5173`; its `/graphql` and `/api/*` proxy routes forward to Cloud Run by default. The API URLs above apply when running the optional Docker backend. Development backend cookies follow the request scheme; production backend cookies require HTTPS.
+
 **Apple Silicon:** SQL Server's container targets x86-64. Docker emulation / Rosetta may be necessary on an M-series Mac; this is not an officially supported native Apple Silicon SQL Server configuration.
 
 ## Cloud deployment configuration
@@ -198,17 +207,11 @@ Import the `charmydarji/GemFlow` repository into Vercel and configure:
 | Output           | `dist`                            |
 | Production site  | `https://gemflow-cyan.vercel.app` |
 
-The frontend currently uses these environment variable names (set them for **Production**):
+Production builds use the current website origin for login and GraphQL requests through `frontend/src/api.ts`. `frontend/vercel.json` forwards `/graphql` and `/api/*` to Cloud Run before the React SPA fallback. These rewrites are required for the deployed frontend. If the backend URL changes, update both rewrite destinations and redeploy.
 
-```dotenv
-VITE_GRAPHQL_URL=https://gemflow-api-677007020371.us-east1.run.app/graphql
-VITE_API_URL=https://gemflow-api-677007020371.us-east1.run.app
-VITE_PARTNER_API_URL=https://gemflow-api-677007020371.us-east1.run.app/api/partner/catalog
-```
+`VITE_API_URL` and `VITE_GRAPHQL_URL` override endpoints only during development. By default, requests use the current website origin; Vite forwards development requests to `https://gemflow-api-677007020371.us-east1.run.app`. Set `API_PROXY_TARGET` in `frontend/.env.local` to override that upstream and restart Vite.
 
-These URLs are public client configuration, **not secrets**. For a Vite application, environment-variable changes take effect only after **rebuilding/redeploying** the frontend.
-
-**Optional same-origin approach for cookie-based administration:** If an API proxy is configured in `frontend/vercel.json` to forward `/graphql` and `/api/*` to Cloud Run, set the frontend API variables to the corresponding **Vercel-domain** URLs instead. Route API rewrites before the React SPA fallback. Do not mix a proxy configuration with direct Cloud Run URLs without checking how the frontend issues login and GraphQL requests.
+The partner catalog link defaults to `/api/partner/catalog`; `VITE_PARTNER_API_URL` can override it. Production login and protected GraphQL requests must share the website origin so the browser sends the administrator cookie. After login, the UI checks `/api/admin/me` before opening the dashboard.
 
 ### Backend: Google Cloud Run
 
@@ -229,6 +232,7 @@ The ASP.NET Core container uses the following runtime configuration:
 | `ConnectionStrings__Shop` | SQL Server connection string; includes sensitive credentials                          |
 | `Admin__Username`         | Demo administrator login                                                              |
 | `Admin__Password`         | Strong demo admin password (at least 16 characters)                                   |
+| `ASPNETCORE_ENVIRONMENT`   | Use `Production` for the deployed service so cookies always require HTTPS             |
 
 With the Cloud SQL Auth Proxy listening inside the Cloud Run service, the connection-string format is:
 
@@ -238,7 +242,7 @@ Server=127.0.0.1,1433;Database=GemFlowDb;User Id=sqlserver;Password=<SQL_SERVER_
 
 Use a strong SQL Server password, keep secrets out of Git, and preferably manage sensitive values in **Google Secret Manager**. The Cloud Run service account needs the **Cloud SQL Client** role for the proxy to authenticate. The proxy accepts the instance connection name as its command-line argument; SQL Server uses port `1433` by default.
 
-> **Security note:** Public API access is appropriate for the demo storefront, but **protected admin mutations must still enforce server-side authentication**. The `run.app` and `vercel.app` domains are cross-site; browser cookie policy can prevent an admin cookie from being sent even when the UI shows an apparent signed-in state. Use an audited same-origin API proxy or intentionally configured HTTPS cross-site cookies and CSRF protection. Don't mark admin product editing as fully tested until a mutation succeeds and persists.
+Administrator sessions use an HTTP-only, `SameSite=Lax` cookie with an eight-hour expiry and sliding renewal. Staff mutations and logout also require `X-GemFlow-Admin: 1`. The API validates authentication and the administrator role. Keep the configured frontend origin restricted and use the same-origin proxy for browser administration.
 
 ### Database: Google Cloud SQL
 
@@ -289,7 +293,7 @@ mutation {
 }
 ```
 
-**Staff mutations must not be publicly accessible without authorization.**
+Send this staff mutation with the administrator session cookie and the `X-GemFlow-Admin: 1` header. The admin UI supplies both automatically.
 
 ## Smoke tests and verification
 
@@ -299,7 +303,13 @@ From the repository root, with a backend running:
 node --test scripts/test-gemflow.mjs
 ```
 
-The suite covers API health, product queries, catalog/partner feed, inventory filtering, invalid checkout, and admin authorization. Additional verification scripts are available under `scripts/`.
+The default suite covers API health, product queries, catalog/partner feed, inventory filtering, invalid checkout, and anonymous authorization checks. To also check login, the private order query, authenticated edit authorization, the required mutation header, and logout using credentials from the root `.env`:
+
+```bash
+node scripts/test-gemflow.mjs --with-admin
+```
+
+These checks do not change inventory or create orders. Set `GEMFLOW_API_URL` to target another API; the default is `http://localhost:5100`. The Node checks send cookies explicitly, so they do not verify browser cookie policy or the Vercel proxy. Additional verification scripts are available under `scripts/`.
 
 ### Live test checklist
 
@@ -316,9 +326,9 @@ Passing the catalog and health endpoints **does not** automatically prove that c
 ## Known limitations / future improvements
 
 - **Demo payments only:** No production payment processor or real-payment checkout.
-- **Admin cross-domain cookies:** The session/cookie behavior across Vercel and Cloud Run needs end-to-end validation for protected product and order operations; use a same-origin proxy or a fully reviewed cross-site auth approach.
+- **Live admin verification:** Production requests now share the Vercel origin through the API proxy. Verify a saved edit and order-status change in the browser after redeployment; local API tests do not prove hosted persistence or browser cookie behavior.
 - **Database schema:** The project currently uses EF Core `EnsureCreated`/seed initialization; a production release should adopt tracked migrations.
-- **Security hardening:** Persistent Data Protection keys, production-grade account management, CSRF protection, stronger secret management, audit logs, and query/rate limits.
+- **Security hardening:** Persistent Data Protection keys, production-grade account management, additional CSRF defenses beyond the current custom-header/origin checks, stronger secret management, audit logs, and query/rate limits.
 - **Operational enhancements:** Pagination, observability/alerts, improved inventory workflows, and richer content management.
 - **Images:** Demo/illustrative imagery is used; use assets with appropriate rights.
 

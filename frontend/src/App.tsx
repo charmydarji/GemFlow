@@ -6,7 +6,7 @@ import type { CartItem, HeroContent, OrderResponse, Product } from './types';
 
 const usd = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 2 }).format(value);
 const defaultCategories = ['Bracelets', 'Earrings', 'Gemstones', 'Necklaces', 'Rings'];
-const partnerApi = import.meta.env.VITE_PARTNER_API_URL ?? 'http://localhost:5100/api/partner/catalog';
+const partnerApi = import.meta.env.VITE_PARTNER_API_URL ?? '/api/partner/catalog';
 
 export default function App() {
   const [products, setProducts] = useState<Product[]>(previewProducts);
