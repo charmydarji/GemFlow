@@ -1,3 +1,4 @@
+import { adminHeaders } from './adminSession';
 import { useEffect, useMemo, useState } from 'react';
 
 type OrderStatus = 'Placed' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled';
@@ -41,7 +42,7 @@ const progressStages: OrderStatus[] = ['Placed', 'Processing', 'Shipped', 'Deliv
 async function graphql<T>(query: string, variables: Record<string, unknown> = {}): Promise<T> {
   const response = await fetch(endpoint, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-GemFlow-Admin': '1' },
+    headers: { 'Content-Type': 'application/json', ...adminHeaders(true) },
     credentials: 'include',
     body: JSON.stringify({ query, variables }),
   });

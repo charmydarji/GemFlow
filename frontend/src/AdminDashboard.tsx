@@ -1,3 +1,4 @@
+import { adminHeaders } from './adminSession';
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { fetchCatalog } from './gql';
 import type { Product } from './types';
@@ -45,7 +46,7 @@ async function createProduct(input: {
 
   const response = await fetch(endpoint, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-GemFlow-Admin': '1' },
+    headers: { 'Content-Type': 'application/json', ...adminHeaders(true) },
     credentials: 'include',
     body: JSON.stringify({ query, variables: input }),
   });
@@ -84,7 +85,7 @@ async function updateProduct(input: {
 
   const response = await fetch(endpoint, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-GemFlow-Admin': '1' },
+    headers: { 'Content-Type': 'application/json', ...adminHeaders(true) },
     credentials: 'include',
     body: JSON.stringify({ query, variables: input }),
   });
