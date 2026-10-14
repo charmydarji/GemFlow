@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { fetchCatalog } from './gql';
+import { graphqlEndpoint as endpoint } from './api';
 import type { Product } from './types';
 
-const endpoint = import.meta.env.VITE_GRAPHQL_URL ?? 'http://localhost:5100/graphql';
 const money = (value: number) => new Intl.NumberFormat('en-US', {
   style: 'currency', currency: 'USD',
 }).format(value);

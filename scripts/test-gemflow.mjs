@@ -149,6 +149,15 @@ if (withAdmin) {
     const data = okGraphql(orders, 'authenticated orders');
     assert.ok(Array.isArray(data.orders), 'authenticated order list missing');
 
+    // Invalid ID exercises mutation authorization without changing inventory.
+    const mutation = 'mutation { updateProduct(id: 0, name: "Session check", category: "Rings", description: "", price: 1, stock: 0) { id } }';
+    const edit = await graphql(mutation, {}, { cookie, 'X-GemFlow-Admin': '1' });
+    assert.ok(edit.body?.errors?.some(error => error.message === 'Invalid product ID.'),
+      'authenticated edit did not reach product validation');
+    const missingHeader = await graphql(mutation, {}, { cookie });
+    assert.ok(missingHeader.body?.errors?.some(error => error.message === 'Admin mutation header missing.'),
+      'authenticated edit must still require the admin mutation header');
+
     const logout = await request('/api/admin/logout', {
       method: 'POST', headers: { cookie, 'X-GemFlow-Admin': '1' },
     });

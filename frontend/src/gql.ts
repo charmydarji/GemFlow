@@ -1,5 +1,5 @@
 import type { HeroContent, OrderResponse, Product } from './types';
-const endpoint = import.meta.env.VITE_GRAPHQL_URL ?? 'http://localhost:5100/graphql';
+import { graphqlEndpoint as endpoint } from './api';
 
 async function gql<T>(query: string, variables: Record<string, unknown> = {}, signal?: AbortSignal): Promise<T> {
   const response = await fetch(endpoint, {

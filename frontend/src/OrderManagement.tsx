@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { graphqlEndpoint as endpoint } from './api';
 
 type OrderStatus = 'Placed' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled';
 
@@ -21,7 +22,6 @@ type CustomerOrder = {
 };
 
 type GraphQLResult<T> = { data?: T; errors?: Array<{ message: string }> };
-const endpoint = import.meta.env.VITE_GRAPHQL_URL ?? 'http://localhost:5100/graphql';
 const money = (amount: number) => new Intl.NumberFormat('en-US', {
   currency: 'USD', style: 'currency',
 }).format(amount);

@@ -1,8 +1,6 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
+import { apiBase } from './api';
 
-const apiBase = import.meta.env.PROD
-  ? window.location.origin
-  : (import.meta.env.VITE_API_URL ?? 'http://localhost:5100');
 type User = { username: string };
 
 export default function AdminGate({ children }: { children: ReactNode }) {
@@ -40,7 +38,9 @@ export default function AdminGate({ children }: { children: ReactNode }) {
       if (response.status === 429) throw new Error('Too many attempts. Please wait a few minutes.');
       if (response.status === 401) throw new Error('Incorrect username or password.');
       if (!response.ok) throw new Error(`Login failed (HTTP ${response.status}).`);
-      const signedIn = (await response.json()) as User;
+      const session = await fetch(`${apiBase}/api/admin/me`, { credentials: 'include' });
+      if (!session.ok) throw new Error('Could not establish an administrator session. Check that browser cookies are enabled and the API uses the same host as login.');
+      const signedIn = (await session.json()) as User;
       setUser(signedIn);
       setPassword('');
     } catch (reason) {
