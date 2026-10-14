@@ -1,6 +1,14 @@
 {
   "rewrites": [
     {
+      "source": "/graphql",
+      "destination": "https://gemflow-api-677007020371.us-east1.run.app/graphql"
+    },
+    {
+      "source": "/api/:path*",
+      "destination": "https://gemflow-api-677007020371.us-east1.run.app/api/:path*"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
