@@ -137,24 +137,26 @@ if (withAdmin) {
       body: JSON.stringify({ username: config.ADMIN_USERNAME, password: config.ADMIN_PASSWORD }),
     });
     assert.equal(login.response.status, 200, `admin login failed HTTP ${login.response.status}`);
-    const token = login.body?.token;
-    assert.ok(typeof token === 'string' && token.length > 20, 'login did not return a bearer token');
-    const headers = { authorization: `Bearer ${token}` };
+    const rawCookie = login.response.headers.get('set-cookie');
+    assert.ok(rawCookie?.includes('GemFlow.Admin='), 'login did not set admin cookie');
+    const cookie = rawCookie.split(';')[0];
 
-    const me = await request('/api/admin/me', { headers });
+    const me = await request('/api/admin/me', { headers: { cookie } });
     assert.equal(me.response.status, 200);
     assert.equal(me.body.username, config.ADMIN_USERNAME);
 
-    const orders = await graphql('query { orders { id status total } }', {}, headers);
+    const orders = await graphql('query { orders { id status total } }', {}, { cookie });
     const data = okGraphql(orders, 'authenticated orders');
     assert.ok(Array.isArray(data.orders), 'authenticated order list missing');
 
     const logout = await request('/api/admin/logout', {
-      method: 'POST', headers: { ...headers, 'X-GemFlow-Admin': '1' },
+      method: 'POST', headers: { cookie, 'X-GemFlow-Admin': '1' },
     });
     assert.equal(logout.response.status, 204, 'logout failed');
-    // Stateless tokens expire after eight hours or when the admin password rotates.
-    // The browser discards the token on sign-out.
+    const expiredCookie = logout.response.headers.get('set-cookie') || '';
+    assert.ok(expiredCookie.includes('GemFlow.Admin='), 'logout did not clear browser cookie');
+    // Cookie auth is stateless: replaying a captured old cookie may still work.
+    // Verify the server tells the browser to discard its cookie, then anonymous access is denied.
     const after = await request('/api/admin/me');
     assert.equal(after.response.status, 401, 'anonymous session is not denied after logout');
   });
