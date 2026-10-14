@@ -1,11 +1,9 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
-import { adminHeaders, clearAdminToken, getAdminToken, setAdminToken } from './adminSession';
 
 const apiBase = import.meta.env.PROD
   ? window.location.origin
   : (import.meta.env.VITE_API_URL ?? 'http://localhost:5100');
 type User = { username: string };
-type LoginResponse = User & { token: string };
 
 export default function AdminGate({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -17,18 +15,13 @@ export default function AdminGate({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let active = true;
-    if (!getAdminToken()) {
-      setChecking(false);
-      return () => { active = false; };
-    }
-    fetch(`${apiBase}/api/admin/me`, { headers: adminHeaders() })
-      .then(async (response) => response.ok ? (await response.json()) as User : null)
-      .then((current) => {
-        if (!active) return;
-        if (!current) clearAdminToken();
-        setUser(current);
+    fetch(`${apiBase}/api/admin/me`, { credentials: 'include' })
+      .then(async (response) => {
+        if (!response.ok) return null;
+        return (await response.json()) as User;
       })
-      .catch(() => { if (active) setError('Cannot reach the GemFlow API.'); })
+      .then((current) => { if (active) setUser(current); })
+      .catch(() => { if (active) setError('Cannot reach the API. Check that Docker is running.'); })
       .finally(() => { if (active) setChecking(false); });
     return () => { active = false; };
   }, []);
@@ -39,20 +32,16 @@ export default function AdminGate({ children }: { children: ReactNode }) {
     setError('');
     try {
       const response = await fetch(`${apiBase}/api/admin/login`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
       });
-      if (response.status === 429) throw new Error('Too many attempts. Try again in a few minutes.');
+      if (response.status === 429) throw new Error('Too many attempts. Please wait a few minutes.');
       if (response.status === 401) throw new Error('Incorrect username or password.');
       if (!response.ok) throw new Error(`Login failed (HTTP ${response.status}).`);
-      const signedIn = (await response.json()) as LoginResponse;
-      if (!signedIn.token) throw new Error('The API did not return an admin session token. Deploy the backend update first.');
-      setAdminToken(signedIn.token);
-      // Only display "Signed in" after the API verifies the new session.
-      const check = await fetch(`${apiBase}/api/admin/me`, { headers: adminHeaders() });
-      if (!check.ok) { clearAdminToken(); throw new Error('Admin login could not be verified.'); }
-      const verified = await check.json() as User;
-      setUser(verified);
+      const signedIn = (await response.json()) as User;
+      setUser(signedIn);
       setPassword('');
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'Could not sign in.');
@@ -61,14 +50,16 @@ export default function AdminGate({ children }: { children: ReactNode }) {
 
   async function signOut() {
     setBusy(true);
-    try {
-      // Best effort; token also expires server-side after 8 hours.
-      await fetch(`${apiBase}/api/admin/logout`, { method: 'POST', headers: adminHeaders(true) });
-    } catch { /* sign-out still clears this browser session */ }
-    clearAdminToken();
-    setUser(null);
     setError('');
-    setBusy(false);
+    try {
+      const response = await fetch(`${apiBase}/api/admin/logout`, {
+        method: 'POST', credentials: 'include', headers: { 'X-GemFlow-Admin': '1' },
+      });
+      if (!response.ok && response.status !== 401) throw new Error('Sign-out failed.');
+      setUser(null);
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'Could not sign out.');
+    } finally { setBusy(false); }
   }
 
   if (checking) return <main className="gf-auth-wrap"><div className="gf-auth-panel" role="status">Checking administrator session…</div></main>;

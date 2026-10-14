@@ -21,9 +21,6 @@ if (string.IsNullOrWhiteSpace(adminUsername) || string.IsNullOrWhiteSpace(adminP
     throw new InvalidOperationException("Set ADMIN_USERNAME and a 16+ character ADMIN_PASSWORD in .env.");
 
 builder.Services.AddHttpContextAccessor();
-// Stateless admin sessions for this prototype: valid for 8 hours and stable across Cloud Run instances.
-builder.Services.AddAuthentication(AdminTokenHandler.SchemeName)
-    .AddScheme<AuthenticationSchemeOptions, AdminTokenHandler>(AdminTokenHandler.SchemeName, _ => { });
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
@@ -82,13 +79,29 @@ app.MapPost("/api/admin/login", async (HttpContext ctx, AdminLoginRequest input)
 {
     if (!AdminSecurity.CheckPassword(input, adminUsername!, adminPassword!))
         return Results.Unauthorized();
-    return Results.Ok(new { username = adminUsername, token = AdminSecurity.CreateToken(adminUsername!, adminPassword!) });
+
+    var claims = new[]
+    {
+        new Claim(ClaimTypes.Name, adminUsername!),
+        new Claim(ClaimTypes.Role, "Admin")
+    };
+    var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+    await ctx.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
+        new ClaimsPrincipal(identity),
+        new AuthenticationProperties { IsPersistent = false });
+    return Results.Ok(new { username = adminUsername });
 }).RequireRateLimiting("admin-login");
 
 app.MapGet("/api/admin/me", (ClaimsPrincipal user) =>
     Results.Ok(new { username = user.Identity?.Name })).RequireAuthorization("AdminOnly");
 
-app.MapPost("/api/admin/logout", () => Results.NoContent()).RequireAuthorization("AdminOnly");
+app.MapPost("/api/admin/logout", async (HttpContext ctx) =>
+{
+    if (ctx.Request.Headers["X-GemFlow-Admin"] != "1")
+        return Results.BadRequest(new { error = "Missing admin request header." });
+    await ctx.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+    return Results.NoContent();
+}).RequireAuthorization("AdminOnly");
 
 app.MapGraphQL("/graphql");
 using (var scope = app.Services.CreateScope())
